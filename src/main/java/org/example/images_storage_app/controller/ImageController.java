@@ -1,5 +1,10 @@
 package org.example.images_storage_app.controller;
 
+import org.example.images_storage_app.dto.request.ImageLabelEntityRequestDTO;
+import org.example.images_storage_app.dto.response.ImageEntityResponseDTO;
+import org.example.images_storage_app.dto.response.ImageLabelEntityResponseDTO;
+import org.example.images_storage_app.mapper.ImageEntityMapper;
+import org.example.images_storage_app.mapper.ImageLabelEntityMapper;
 import org.example.images_storage_app.model.ImageEntity;
 import org.example.images_storage_app.model.ImageLabelEntity;
 import org.example.images_storage_app.repository.ImageLabelRepository;
@@ -12,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/images")
@@ -21,17 +27,23 @@ public class ImageController {
     private final ImageRepository imageRepository;
     private final RekognitionService rekognitionService;
     private final ImageLabelRepository imageLabelRepository;
+    private final ImageEntityMapper imageEntityMapper;
+    private final ImageLabelEntityMapper imageLabelEntityMapper;
 
-    public ImageController(S3Service s3Service, ImageRepository imageRepository, RekognitionService rekognitionService, ImageLabelRepository imageLabelRepository) {
+
+    public ImageController(S3Service s3Service, ImageRepository imageRepository, RekognitionService rekognitionService, ImageLabelRepository imageLabelRepository, ImageEntityMapper imageEntityMapper, ImageLabelEntityMapper imageLabelEntityMapper) {
         this.s3Service = s3Service;
         this.imageRepository = imageRepository;
         this.rekognitionService = rekognitionService;
         this.imageLabelRepository = imageLabelRepository;
+        this.imageEntityMapper = imageEntityMapper;
+        this.imageLabelEntityMapper = imageLabelEntityMapper;
     }
 
     @GetMapping
-    public String getImages() {
-        return "all images will be shown here";
+    public List<ImageEntityResponseDTO> getImages() {
+        List<ImageEntityResponseDTO> imageEntities = imageRepository.findAll().stream().map(imageEntityMapper :: mapToDTO ).collect(Collectors.toList());
+        return imageEntities;
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
