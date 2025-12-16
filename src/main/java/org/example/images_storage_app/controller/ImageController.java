@@ -28,8 +28,7 @@ public class ImageController {
 
     @GetMapping
     public List<ImageEntityResponseDTO> getImages() {
-        List<ImageEntityResponseDTO> imageEntities = imageService.getImages().stream().map(imageEntityMapper :: mapToDTO).collect(Collectors.toList());
-        return imageEntities;
+        return imageService.getImages().stream().map(imageEntityMapper :: mapToDTO).collect(Collectors.toList());
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

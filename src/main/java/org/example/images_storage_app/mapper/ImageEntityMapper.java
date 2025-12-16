@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 public class ImageEntityMapper {
     private final ImageLabelRepository imageLabelRepository;
     private final ImageLabelEntityMapper imageLabelEntityMapper;
-    private S3PresignedUrlService presignedUrlService =  new S3PresignedUrlService();
-    private String BUCKET_NAME = "images-storage-app-bucket-west-region";
+    private final S3PresignedUrlService presignedUrlService =  new S3PresignedUrlService();
+    private final String BUCKET_NAME = "images-storage-app-bucket-west-region";
 
 
     public ImageEntityMapper(ImageLabelRepository imageLabelRepository, ImageLabelEntityMapper imageLabelEntityMapper) {
