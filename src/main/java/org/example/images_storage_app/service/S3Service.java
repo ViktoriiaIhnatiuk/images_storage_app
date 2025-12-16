@@ -15,4 +15,6 @@ public class S3Service {
         PutObjectRequest request = PutObjectRequest.builder().bucket(bucketName).key(key).build();
         s3Client.putObject(request, RequestBody.fromBytes(data));
     }
+
+    public void delete(String bucketName, String key) {}
 }

@@ -4,6 +4,7 @@ import org.example.images_storage_app.dto.request.ImageEntityRequestDTO;
 import org.example.images_storage_app.dto.response.ImageEntityResponseDTO;
 import org.example.images_storage_app.model.ImageEntity;
 import org.example.images_storage_app.repository.ImageLabelRepository;
+import org.example.images_storage_app.service.S3PresignedUrlService;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
@@ -12,6 +13,9 @@ import java.util.stream.Collectors;
 public class ImageEntityMapper {
     private final ImageLabelRepository imageLabelRepository;
     private final ImageLabelEntityMapper imageLabelEntityMapper;
+    private final S3PresignedUrlService presignedUrlService =  new S3PresignedUrlService();
+    private final String BUCKET_NAME = "images-storage-app-bucket-west-region";
+
 
     public ImageEntityMapper(ImageLabelRepository imageLabelRepository, ImageLabelEntityMapper imageLabelEntityMapper) {
         this.imageLabelRepository = imageLabelRepository;
@@ -27,6 +31,10 @@ public class ImageEntityMapper {
     public ImageEntityResponseDTO mapToDTO(ImageEntity  imageEntity) {
         ImageEntityResponseDTO imageEntityResponseDTO = new ImageEntityResponseDTO();
         imageEntityResponseDTO.setFileName(imageEntity.getFileName());
+        imageEntityResponseDTO.setUrl(presignedUrlService.generateUrl(
+                BUCKET_NAME,
+                imageEntity.getFileName()
+        ));
         imageEntityResponseDTO.setImageLabels(imageLabelRepository.getImageLabelEntitiesByImage(imageEntity).stream().map(imageLabelEntityMapper::mapToDTO).collect(Collectors.toList()));
         return imageEntityResponseDTO;
     }
