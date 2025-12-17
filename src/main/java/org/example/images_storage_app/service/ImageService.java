@@ -1,6 +1,8 @@
 package org.example.images_storage_app.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.images_storage_app.dto.response.ImageEntityResponseDTO;
+import org.example.images_storage_app.mapper.ImageEntityMapper;
 import org.example.images_storage_app.model.ImageEntity;
 import org.example.images_storage_app.model.ImageStatus;
 import org.example.images_storage_app.repository.ImageRepository;
@@ -9,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +23,7 @@ public class ImageService {
     private final ImageValidationService validationService;
 
     private final String BUCKET_NAME = "images-storage-app-bucket-west-region";
+    private final ImageEntityMapper imageEntityMapper;
 
     public void upload(MultipartFile file) {
         validationService.validate(file);
@@ -40,11 +44,11 @@ public class ImageService {
         }
     }
 
-    public List<ImageEntity> getImages() {
-        return imageRepository.findAll();
+    public List<ImageEntityResponseDTO> getImages() {
+        return imageRepository.findAll().stream().map(imageEntityMapper::mapToDTO).collect(Collectors.toList());
     }
 
-    public List<ImageEntity> getImagesByLabel(String label) {
-        return imageRepository.findByLabel(label);
+    public List<ImageEntityResponseDTO> getImagesByLabel(String label) {
+        return imageRepository.findAll().stream().map(imageEntityMapper::mapToDTO).collect(Collectors.toList());
     }
 }

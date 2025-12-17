@@ -24,8 +24,7 @@ public class RekognitionAsyncService {
     @Transactional
     public void processAsync(Long imageId, String bucketName, String objectKey) {
 
-        ImageEntity image =
-                imageRepository.findById(imageId).orElseThrow();
+        ImageEntity image = imageRepository.findById(imageId).get();
 
         try {
             List<ImageLabelEntity> labels = rekognitionService.analyzeFromS3(bucketName, objectKey, image);

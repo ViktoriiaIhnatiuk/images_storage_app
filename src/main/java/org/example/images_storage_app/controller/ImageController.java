@@ -1,31 +1,27 @@
 package org.example.images_storage_app.controller;
 
 import org.example.images_storage_app.dto.response.ImageEntityResponseDTO;
-import org.example.images_storage_app.mapper.ImageEntityMapper;
 import org.example.images_storage_app.service.ImageService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/images")
 public class ImageController {
-    private final ImageEntityMapper imageEntityMapper;
     private final ImageService imageService;
 
 
-    public ImageController(ImageEntityMapper imageEntityMapper, ImageService imageService) {
-        this.imageEntityMapper = imageEntityMapper;
+    public ImageController(ImageService imageService) {
         this.imageService = imageService;
     }
 
     @GetMapping
     public List<ImageEntityResponseDTO> getImages() {
-        return imageService.getImages().stream().map(imageEntityMapper :: mapToDTO).collect(Collectors.toList());
+        return imageService.getImages();
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -34,9 +30,7 @@ public class ImageController {
     }
 
     @GetMapping("/search")
-    public List<ImageEntityResponseDTO> searchByLabel(
-            @RequestParam String label
-    ) {
-        return imageService.getImagesByLabel(label).stream().map(imageEntityMapper :: mapToDTO ).toList();
+    public List<ImageEntityResponseDTO> searchByLabel(@RequestParam String label) {
+        return imageService.getImagesByLabel(label);
     }
 }
