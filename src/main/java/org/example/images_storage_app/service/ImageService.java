@@ -1,6 +1,7 @@
 package org.example.images_storage_app.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.images_storage_app.exception.ImageAnalysisException;
 import org.example.images_storage_app.exception.UnsupportedImageFormatException;
 import org.example.images_storage_app.model.ImageEntity;
 import org.example.images_storage_app.model.ImageLabelEntity;
@@ -26,7 +27,7 @@ public class ImageService {
     private final String BUCKET_NAME = "images-storage-app-bucket-west-region";
 
     @Transactional
-    public void upload(MultipartFile file) {
+    public String upload(MultipartFile file) {
         validationService.validate(file);
 
         String fileName = file.getOriginalFilename();
@@ -35,7 +36,7 @@ public class ImageService {
         try {
             bytes = file.getBytes();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to read file", e);
+            throw new ImageAnalysisException("Cannot read file bytes");
         }
 
         try {
@@ -56,6 +57,7 @@ public class ImageService {
             System.out.println("Failed to upload image " + fileName);
             throw new UnsupportedImageFormatException("Failed to upload image file, please, upload correct image file");
         }
+        return "Uploaded successfully";
     }
 
     public List<ImageEntity> getImages() {

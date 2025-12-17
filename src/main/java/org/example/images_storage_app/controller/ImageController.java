@@ -33,8 +33,7 @@ public class ImageController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public String uploadImage(@RequestPart("file") MultipartFile file) {
-        imageService.upload(file);
-        return file.getOriginalFilename() + " has been uploaded: ";
+        return imageService.upload(file);
     }
 
     @GetMapping("/search")
