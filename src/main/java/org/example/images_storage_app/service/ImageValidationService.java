@@ -18,14 +18,9 @@ public class ImageValidationService {
     public void validate(MultipartFile file) {
         if (file.isEmpty()) {
             throw new UnsupportedImageFormatException("File is empty");
-        }
-
-        String contentType = file.getContentType();
-
-        if (contentType == null || !SUPPORTED_TYPES.contains(contentType)) {
+        } else if (!SUPPORTED_TYPES.contains(file.getContentType())) {
             throw new UnsupportedImageFormatException(
-                    "Unsupported image type: " + contentType +
-                    ". Only JPEG and PNG are allowed"
+                    "File type " + file.getContentType() + " is not supported"
             );
         }
     }
