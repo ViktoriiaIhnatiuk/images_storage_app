@@ -1,70 +1,54 @@
 package org.example.images_storage_app.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.images_storage_app.exception.ImageAnalysisException;
-import org.example.images_storage_app.exception.UnsupportedImageFormatException;
+import org.example.images_storage_app.dto.response.ImageEntityResponseDTO;
+import org.example.images_storage_app.mapper.ImageEntityMapper;
 import org.example.images_storage_app.model.ImageEntity;
-import org.example.images_storage_app.model.ImageLabelEntity;
-import org.example.images_storage_app.repository.ImageLabelRepository;
+import org.example.images_storage_app.model.ImageStatus;
 import org.example.images_storage_app.repository.ImageRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ImageService {
 
     private final S3Service s3Service;
-    private final RekognitionService rekognitionService;
+    private final RekognitionAsyncService rekognitionAsyncService;
     private final ImageRepository imageRepository;
-    private final ImageLabelRepository imageLabelRepository;
     private final ImageValidationService validationService;
 
     private final String BUCKET_NAME = "images-storage-app-bucket-west-region";
+    private final ImageEntityMapper imageEntityMapper;
 
-    @Transactional
-    public String upload(MultipartFile file) {
+    public void upload(MultipartFile file) {
         validationService.validate(file);
 
-        String fileName = file.getOriginalFilename();
-        byte[] bytes;
+        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+
+        s3Service.upload(BUCKET_NAME, fileName, file);
+
+        ImageEntity image = new ImageEntity();
+        image.setFileName(fileName);
+        image.setStatus(ImageStatus.PROCESSING);
+        image = imageRepository.save(image);
 
         try {
-            bytes = file.getBytes();
-        } catch (IOException e) {
-            throw new ImageAnalysisException("Cannot read file bytes");
-        }
-
-        try {
-            s3Service.upload(BUCKET_NAME, fileName, bytes);
-            String url = "https://" + BUCKET_NAME + ".s3.eu-west-1.amazonaws.com/" + fileName;
-            ImageEntity image = new ImageEntity();
-            image.setFileName(fileName);
-            image.setUrl(url);
-            imageRepository.save(image);
-
-            List<ImageLabelEntity> labels =
-                    rekognitionService.analyze(bytes, image);
-
-            imageLabelRepository.saveAll(labels);
-
+            rekognitionAsyncService.processAsync(image.getId(), BUCKET_NAME, fileName);
         } catch (Exception e) {
-            s3Service.delete(BUCKET_NAME, fileName);
-            System.out.println("Failed to upload image " + fileName);
-            throw new UnsupportedImageFormatException("Failed to upload image file, please, upload correct image file");
+            System.out.println("Failed to start async rekognition");
         }
-        return "Uploaded successfully";
     }
 
-    public List<ImageEntity> getImages() {
-        return imageRepository.findAll();
+    public List<ImageEntityResponseDTO> getImages() {
+        return imageRepository.findAll().stream().map(imageEntityMapper::mapToDTO).collect(Collectors.toList());
     }
 
-    public List<ImageEntity> getImagesByLabel(String label) {
-        return imageRepository.findByLabel(label);
+    public List<ImageEntityResponseDTO> getImagesByLabel(String label) {
+        return imageRepository.findByLabel(label).stream().map(imageEntityMapper::mapToDTO).collect(Collectors.toList());
     }
 }
