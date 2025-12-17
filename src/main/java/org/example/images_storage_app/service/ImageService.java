@@ -49,6 +49,6 @@ public class ImageService {
     }
 
     public List<ImageEntityResponseDTO> getImagesByLabel(String label) {
-        return imageRepository.findAll().stream().map(imageEntityMapper::mapToDTO).collect(Collectors.toList());
+        return imageRepository.findByLabel(label).stream().map(imageEntityMapper::mapToDTO).collect(Collectors.toList());
     }
 }
