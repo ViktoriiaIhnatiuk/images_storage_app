@@ -1,4 +1,4 @@
-﻿# IMAGES_STORAGE_APP
+﻿# images_storage_app
 ***
 It is a simple fullstack web application which allows upload images, store them in AWS S3, analyze them using AWS Rekognition, and view the results through a web interface
 
@@ -37,11 +37,15 @@ Usage
 1. Clone this project from GitHub and make sure that an absolute path doesn't include any white spaces and/or non-Latin
    symbols;
 2. Run application locally:
+
 BACKEND:
+
    * ./mvnw spring-boot:run
    * http://localhost:8080/swagger-ui.html
    * http://localhost:8080/h2-console
+
 FRONTEND:
+
    * cd image-app-frontend
    * npm install
    * ng serve
