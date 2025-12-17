@@ -2,7 +2,6 @@ package org.example.images_storage_app.controller;
 
 import org.example.images_storage_app.dto.response.ImageEntityResponseDTO;
 import org.example.images_storage_app.mapper.ImageEntityMapper;
-import org.example.images_storage_app.repository.ImageRepository;
 import org.example.images_storage_app.service.ImageService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -15,13 +14,11 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/images")
 public class ImageController {
-    private final ImageRepository imageRepository;
     private final ImageEntityMapper imageEntityMapper;
     private final ImageService imageService;
 
 
-    public ImageController(ImageRepository imageRepository, ImageEntityMapper imageEntityMapper, ImageService imageService) {
-        this.imageRepository = imageRepository;
+    public ImageController(ImageEntityMapper imageEntityMapper, ImageService imageService) {
         this.imageEntityMapper = imageEntityMapper;
         this.imageService = imageService;
     }
@@ -32,8 +29,8 @@ public class ImageController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public String uploadImage(@RequestPart("file") MultipartFile file) {
-        return imageService.upload(file);
+    public void uploadImage(@RequestPart("file") MultipartFile file) {
+        imageService.upload(file);
     }
 
     @GetMapping("/search")

@@ -3,23 +3,20 @@ package org.example.images_storage_app.mapper;
 import org.example.images_storage_app.dto.request.ImageEntityRequestDTO;
 import org.example.images_storage_app.dto.response.ImageEntityResponseDTO;
 import org.example.images_storage_app.model.ImageEntity;
-import org.example.images_storage_app.repository.ImageLabelRepository;
+import org.example.images_storage_app.model.ImageStatus;
 import org.example.images_storage_app.service.S3PresignedUrlService;
 import org.springframework.stereotype.Component;
 
-import java.util.stream.Collectors;
-
 @Component
 public class ImageEntityMapper {
-    private final ImageLabelRepository imageLabelRepository;
     private final ImageLabelEntityMapper imageLabelEntityMapper;
-    private final S3PresignedUrlService presignedUrlService =  new S3PresignedUrlService();
+    private final S3PresignedUrlService presignedUrlService;
     private final String BUCKET_NAME = "images-storage-app-bucket-west-region";
 
 
-    public ImageEntityMapper(ImageLabelRepository imageLabelRepository, ImageLabelEntityMapper imageLabelEntityMapper) {
-        this.imageLabelRepository = imageLabelRepository;
+    public ImageEntityMapper(ImageLabelEntityMapper imageLabelEntityMapper, S3PresignedUrlService presignedUrlService) {
         this.imageLabelEntityMapper = imageLabelEntityMapper;
+        this.presignedUrlService = presignedUrlService;
     }
 
     public ImageEntity mapToObject(ImageEntityRequestDTO imageEntityRequestDTO) {
@@ -31,11 +28,21 @@ public class ImageEntityMapper {
     public ImageEntityResponseDTO mapToDTO(ImageEntity  imageEntity) {
         ImageEntityResponseDTO imageEntityResponseDTO = new ImageEntityResponseDTO();
         imageEntityResponseDTO.setFileName(imageEntity.getFileName());
-        imageEntityResponseDTO.setUrl(presignedUrlService.generateUrl(
-                BUCKET_NAME,
-                imageEntity.getFileName()
-        ));
-        imageEntityResponseDTO.setImageLabels(imageLabelRepository.getImageLabelEntitiesByImage(imageEntity).stream().map(imageLabelEntityMapper::mapToDTO).collect(Collectors.toList()));
+        imageEntityResponseDTO.setStatus(imageEntity.getStatus().name());
+        if (imageEntity.getStatus() == ImageStatus.READY) {
+            imageEntityResponseDTO.setUrl(presignedUrlService.generateUrl(
+                    BUCKET_NAME,
+                    imageEntity.getFileName()
+            ));
+        }
+        if (imageEntity.getImageLabels() != null) {
+            imageEntityResponseDTO.setImageLabels(
+                    imageEntity.getImageLabels()
+                            .stream()
+                            .map(imageLabelEntityMapper::mapToDTO)
+                            .toList()
+            );
+        }
         return imageEntityResponseDTO;
     }
 }
